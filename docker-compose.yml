@@ -1,0 +1,36 @@
+version: '3.7'
+services:
+  clientapp:
+    build:
+      #Building Client App from existing docker file and allowing open port 5001
+      context: clientapp/
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+  dbapp:
+    environment:
+      #Setting environment for username and password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    build:
+      #Building DB Application from existing docker file.
+      context: dbapp/
+      dockerfile: Dockerfile
+  postgres:
+    #Creating POSTGRES from docker image.
+    image: postgres:13
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: password123
+    volumes:
+        #Pulling setup executable and allowing it to build the DB.
+      - type: bind
+        source: ./postgres
+        target: /docker-entrypoint-initdb.d/
+        read_only: true
+        #Setting storage location to save SQL file outside docker to preserve data.
+      - ./data:/var/lib/postgresql/data
+networks:
+  default:
+    #Create mynet network and attaching all docker containers from above.
+    name: mynet
